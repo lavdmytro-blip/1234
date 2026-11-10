@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090c13">
+  <meta name="description" content="Кирпич: Побег вдвоём — браузерная кооперативная игра на двоих. Создай комнату и играй с другом онлайн.">
+  <title>КИРПИЧ: ПОБЕГ ВДВОЁМ</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/game.js" defer></script>
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="app" id="app">
+    <header class="site-header">
+      <a class="logo" href="/" aria-label="Кирпич — главная"><span class="logo-icon">К</span><span>КИРПИЧ<span class="logo-accent">.GAME</span></span></a>
+      <div class="header-actions">
+        <span class="online-status" id="onlineStatus"><i class="status-dot"></i><span>ПОДКЛЮЧЕНИЕ...</span></span>
+        <button id="soundToggle" class="icon-btn" type="button" aria-label="Включить или выключить звук" title="Звук выключен">♫ <span id="soundLabel">OFF</span></button>
+      </div>
+    </header>
+
+    <main>
+      <section id="homeScreen" class="screen home-screen">
+        <div class="home-content">
+          <div class="eyebrow"><span class="eyebrow-line"></span> ОНЛАЙН КООП • 2 ИГРОКА <span class="version">V 1.0</span></div>
+          <h1>НЕ ПОПАДИСЬ<br><em>КИРПИЧУ<span class="period">.</span></em></h1>
+          <p class="home-lead">Тёмный двор. Четыре потерянные детали. Один очень злой Кирпич. <strong>Выбирайтесь вместе — или не выбирайтесь вовсе.</strong></p>
+          <div class="feature-chips"><span>◉ ЖИВОЙ МУЛЬТИПЛЕЕР</span><span>⌁ ИИ-ПРЕСЛЕДОВАТЕЛЬ</span><span>↗ ПОБЕГ ВДВОЁМ</span></div>
+
+          <div class="start-card">
+            <div class="start-card-title"><span class="mini-square"></span><strong>НАЧАТЬ ИГРУ</strong><span class="start-card-sub">БЕЗ РЕГИСТРАЦИИ</span></div>
+            <label for="nameInput">ТВОЙ ПОЗЫВНОЙ</label>
+            <input id="nameInput" maxlength="16" autocomplete="nickname" placeholder="Например, Легенда" value="Игрок 1">
+            <button id="createBtn" class="primary-btn" type="button"><span>✳</span> СОЗДАТЬ КОМНАТУ <span class="btn-end">↗</span></button>
+            <div class="or-divider"><span>ИЛИ ПРИСОЕДИНИТЬСЯ</span></div>
+            <div class="join-row"><input id="codeInput" maxlength="5" autocapitalize="characters" spellcheck="false" placeholder="КОД КОМНАТЫ" aria-label="Код комнаты"><button id="joinBtn" class="secondary-btn" type="button">ВОЙТИ ↗</button></div>
+            <p id="homeError" class="error-text" role="alert" aria-live="polite"></p>
+          </div>
+          <div class="home-note"><span class="note-bullet">✦</span> Один создаёт комнату, второй заходит по ссылке. Игра запускается прямо в браузере.</div>
+        </div>
+
+        <div class="poster" aria-hidden="true">
+          <div class="poster-frame"><span>КАМЕРА № 01</span><span class="rec"><i></i> REC</span></div>
+          <div class="poster-moon"></div>
+          <div class="poster-fence"></div>
+          <div class="poster-figure">
+            <svg viewBox="0 0 450 580" role="presentation" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e24c37"/><stop offset="1" stop-color="#742323"/></linearGradient>
+                <linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffba7c"/><stop offset="1" stop-color="#b96048"/></linearGradient>
+                <radialGradient id="flash"><stop stop-color="#fff9c0" stop-opacity=".9"/><stop offset="1" stop-color="#fff9c0" stop-opacity="0"/></radialGradient>
+                <filter id="shadow"><feGaussianBlur stdDeviation="15"/></filter>
+              </defs>
+              <ellipse cx="231" cy="555" rx="195" ry="24" fill="#000" opacity=".5" filter="url(#shadow)"/>
+              <path d="M108 565 Q88 388 134 296 Q178 254 232 264 Q291 246 334 300 Q372 396 361 565Z" fill="url(#coat)" stroke="#62282b" stroke-width="9"/>
+              <path d="M178 283 L231 381 L280 281" fill="none" stroke="#5b1d24" stroke-width="18"/>
+              <path d="M226 373 L227 565" stroke="#f47a52" stroke-width="7" opacity=".7"/>
+              <path d="M113 330 Q75 384 57 475 L103 492 L155 357" fill="#9c342c" stroke="#642528" stroke-width="9"/>
+              <path d="M338 327 Q382 370 389 463 L339 489 L300 352" fill="#9c342c" stroke="#642528" stroke-width="9"/>
+              <path d="M50 468 Q56 450 77 451 Q108 446 115 485 Q107 518 78 515 Q50 512 50 468" fill="url(#face)" stroke="#8d493a" stroke-width="5"/>
+              <path d="M331 468 Q337 443 357 447 Q389 451 389 489 Q375 513 346 507Z" fill="url(#face)" stroke="#8d493a" stroke-width="5"/>
+              <rect x="65" y="462" width="25" height="52" rx="8" fill="#252e38" transform="rotate(15 77 485)"/>
+              <circle cx="72" cy="475" r="7" fill="#eafcbb"/>
+              <path d="M155 134 Q140 177 155 232 Q164 283 229 294 Q305 286 315 213 Q324 139 282 107 Q203 64 155 134" fill="url(#face)" stroke="#71382f" stroke-width="8"/>
+              <path d="M150 161 Q126 100 178 72 Q239 40 299 101 Q327 117 318 168 L305 170 L289 126 Q219 138 156 142Z" fill="#1e2933" stroke="#111a23" stroke-width="8"/>
+              <path d="M128 123 Q208 89 315 128 Q312 145 293 152 L153 158 Q131 151 128 123" fill="#303b47"/>
+              <path d="M158 180 L208 169" stroke="#342322" stroke-width="13" stroke-linecap="round"/>
+              <path d="M249 168 L300 176" stroke="#342322" stroke-width="13" stroke-linecap="round"/>
+              <path d="M165 197 Q184 187 205 201" stroke="#fff0cf" stroke-width="8" stroke-linecap="round"/>
+              <path d="M256 202 Q276 187 297 204" stroke="#fff0cf" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="187" cy="201" r="6" fill="#121a22"/><circle cx="278" cy="202" r="6" fill="#121a22"/>
+              <path d="M228 198 L216 234 L238 238" fill="none" stroke="#924d3d" stroke-width="7" stroke-linecap="round"/>
+              <path d="M192 253 Q223 271 264 245" stroke="#492927" stroke-width="8" stroke-linecap="round" fill="none"/>
+              <path d="M182 242 L188 251 M276 237 L268 248" stroke="#8e4037" stroke-width="5" stroke-linecap="round"/>
+              <path d="M173 294 Q229 328 292 294" stroke="#fa7651" stroke-width="8" opacity=".55" fill="none"/>
+              <path d="M262 373 L335 367 L337 407 L262 414Z" fill="#3d2730" opacity=".7"/>
+              <text x="268" y="395" font-family="Arial, sans-serif" font-size="15" font-weight="900" fill="#fee3aa">ОХРАНА</text>
+            </svg>
+          </div>
+          <div class="poster-light"></div>
+          <div class="poster-title"><span>ОН РЯДОМ.</span><strong>БЕГИ.</strong></div>
+          <div class="poster-bottom"><span>ОБЪЕКТ: <b>КИРПИЧ</b></span><span>УРОВЕНЬ УГРОЗЫ <b>МАКС.</b></span></div>
+        </div>
+      </section>
+
+      <section id="lobbyScreen" class="screen lobby-screen hidden">
+        <div class="lobby-left">
+          <div class="eyebrow"><span class="eyebrow-line"></span> БЕЗОПАСНАЯ ЗОНА • ЛОББИ</div>
+          <h2>СОБИРАЙ<br><em>КОМАНДУ<span class="period">.</span></em></h2>
+          <p class="lobby-description">Пригласи напарника. Как только вас станет двое, можно выходить за деталями.</p>
+          <div class="room-card">
+            <span class="room-label">КОД ТВОЕЙ КОМНАТЫ</span>
+            <div class="room-code" id="lobbyCode">•••••</div>
+            <div class="room-actions"><button id="copyCodeBtn" class="secondary-btn" type="button">⧉ КОПИРОВАТЬ КОД</button><button id="copyLinkBtn" class="secondary-btn" type="button">↗ ССЫЛКА ДРУГУ</button></div>
+          </div>
+          <div class="team-list"><div class="team-row" id="slot0"><span class="team-number">01</span><span class="team-avatar one">●</span><span class="team-name">ОЖИДАНИЕ...</span><span class="team-state">НЕ В СЕТИ</span></div><div class="team-row" id="slot1"><span class="team-number">02</span><span class="team-avatar two">●</span><span class="team-name">ОЖИДАНИЕ...</span><span class="team-state">НЕ В СЕТИ</span></div></div>
+          <button id="startBtn" class="primary-btn start-game-btn" type="button" disabled>НУЖНО ДВА ИГРОКА <span class="btn-end">↗</span></button>
+          <button id="leaveLobbyBtn" class="link-btn" type="button">← НАЗАД В МЕНЮ</button>
+        </div>
+        <div class="lobby-guide">
+          <div class="guide-top">ИНСТРУКТАЖ <span>01 / 04</span></div>
+          <h3>ПЛАН<br>ПОБЕГА</h3>
+          <div class="guide-step"><span>01</span><div><b>НАЙДИТЕ 4 ДЕТАЛИ</b><small>Разбросаны по всему лабиринту.</small></div></div>
+          <div class="guide-step"><span>02</span><div><b>НЕ ПОПАДАЙТЕСЬ</b><small>Кирпич слышит шаги и идёт за вами.</small></div></div>
+          <div class="guide-step"><span>03</span><div><b>СПАСАЙТЕ ДРУГА</b><small>Подойди и удерживай E для помощи.</small></div></div>
+          <div class="guide-step"><span>04</span><div><b>БЕГИТЕ ВМЕСТЕ</b><small>Оба игрока должны прийти к выходу.</small></div></div>
+          <div class="guide-controls"><b>УПРАВЛЕНИЕ</b><span>W A S D / СТРЕЛКИ — ХОДИТЬ</span><span>SHIFT — БЕГ • E — ПОМОЩЬ</span></div>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen game-screen hidden">
+        <div class="game-heading"><div><div class="eyebrow small"><span class="eyebrow-line"></span> МИССИЯ 01 • НОЧНОЙ ДВОР</div><h2>ПОБЕГ <em>ВДВОЁМ</em></h2></div><div class="game-heading-side"><span class="game-code">КОМНАТА <b id="gameCode">-----</b></span><button id="leaveGameBtn" type="button" class="outline-small">ВЫЙТИ ✕</button></div></div>
+        <div class="game-layout">
+          <div class="play-column">
+            <div id="gameViewport" class="game-viewport"><canvas id="gameCanvas" aria-label="Игровая карта"></canvas>
+              <div class="viewport-corner tl">CAM 01 // LIVE</div><div class="viewport-corner tr" id="liveThreat">● КИРПИЧ БЛИЗКО</div>
+              <div class="game-toast" id="gameToast" aria-live="polite"></div>
+              <div class="game-prompt" id="gamePrompt"></div>
+              <div class="game-result hidden" id="gameResult"><div class="result-card"><span class="result-brow" id="resultBrow">МИССИЯ ЗАВЕРШЕНА</span><h2 id="resultTitle">ПОБЕГ!</h2><p id="resultText"></p><button id="restartBtn" class="primary-btn" type="button">ЕЩЁ ОДНА ПОПЫТКА ↗</button><button id="resultLeaveBtn" class="link-btn" type="button">← ВЫЙТИ В МЕНЮ</button></div></div>
+            </div>
+            <div class="controls-bar"><div><span class="key">W</span><span class="key-row"><span class="key">A</span><span class="key">S</span><span class="key">D</span></span><span>ДВИЖЕНИЕ</span></div><div><span class="key wide">SHIFT</span><span>БЕГ</span></div><div><span class="key">E</span><span>СПАСТИ ДРУГА</span></div><span class="control-tip">Не стой на месте. Кирпич не спит.</span></div>
+          </div>
+          <aside class="game-sidebar"><div class="mission-card"><div class="sidebar-label">ЗАДАНИЕ <span>01 / 01</span></div><h3>ВЫБРАТЬСЯ<br>ЖИВЫМИ</h3><p>Найдите все детали и бегите к зелёным воротам.</p><div class="parts-counter"><span id="partsCount">0</span><span class="parts-total">/ 4</span><small>ДЕТАЛИ</small></div><div class="parts-markers" id="partsMarkers"><i></i><i></i><i></i><i></i></div><div class="mission-next" id="missionNext">ИЩИТЕ ДЕТАЛИ</div></div><div class="timer-card"><div class="sidebar-label">ДО ЗАКРЫТИЯ ВОРОТ</div><div id="timerText" class="timer">03:40</div><div id="timerBar" class="timer-progress"><span></span></div></div><div class="players-card"><div class="sidebar-label">КОМАНДА <span>02 / 02</span></div><div class="player-status"><span class="player-color one"></span><div><b id="p0Name">ИГРОК 1</b><small id="p0State">В ИГРЕ</small></div><span id="p0Parts">0 ⚙</span></div><div class="player-status"><span class="player-color two"></span><div><b id="p1Name">ИГРОК 2</b><small id="p1State">В ИГРЕ</small></div><span id="p1Parts">0 ⚙</span></div><div class="stamina-label">ТВОЯ ВЫНОСЛИВОСТЬ <span id="staminaText">100%</span></div><div class="stamina-bar"><span id="staminaBar"></span></div></div></aside>
+        </div>
+        <div id="touchControls" class="touch-controls" aria-label="Сенсорное управление"><div class="dpad"><button data-dir="up" class="pad up">▲</button><button data-dir="left" class="pad left">◀</button><button data-dir="down" class="pad down">▼</button><button data-dir="right" class="pad right">▶</button></div><div class="touch-actions"><button id="touchUse" class="action-use">E<br><small>ПОМОЧЬ</small></button><button id="touchRun" class="action-run">БЕГ<br><small>SHIFT</small></button></div></div>
+      </section>
+    </main>
+    <footer class="footer"><span>© КИРПИЧ.GAME</span><span>ПОСТРОЕНО ДЛЯ ДВУХ СМЕЛЬЧАКОВ</span><span>НЕ РАБОТАЕТ БЕЗ ДРУГА ✳</span></footer>
+  </div>
+  <div id="globalToast" class="global-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
